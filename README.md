@@ -158,17 +158,6 @@ If you deploy `client/` as a standalone static site (rather than using the one-p
 
 Set `VITE_API_URL` (see below) to point the deployed frontend at your API.
 
-## Demo login
-
-The backend seed creates an administrator using:
-
-```
-Email:    admin@company.com
-Password: ChangeMe123!
-```
-
-Change the seed credentials in `server/.env` before using this outside a local/demo environment.
-
 ## Production notes
 
 For a deployed frontend, set:
