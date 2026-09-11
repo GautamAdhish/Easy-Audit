@@ -9,6 +9,7 @@ export default function AssetsPage() {
     name: string;
     url: string;
   } | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -17,26 +18,23 @@ export default function AssetsPage() {
   }, [preview]);
 
   const openPreview = async (row: any) => {
-    const token = localStorage.getItem("is_audit_token");
-    const response = await fetch(`/api/assets/${row._id}/photo`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
+    setPreviewError(null);
+    try {
+      const blob = await api.getBlob(`/assets/${row._id}/photo`);
+      const url = URL.createObjectURL(blob);
 
-    if (!response.ok) {
-      const payload = await response.json().catch(() => ({}));
-      throw new Error(payload.message || "Preview failed");
+      setPreview((current) => {
+        if (current?.url) URL.revokeObjectURL(current.url);
+        return {
+          name: row.photoName || row.assetName || "asset-photo",
+          url,
+        };
+      });
+    } catch (err) {
+      setPreviewError(
+        err instanceof Error ? err.message : "Failed to load photo preview.",
+      );
     }
-
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-
-    setPreview((current) => {
-      if (current?.url) URL.revokeObjectURL(current.url);
-      return {
-        name: row.photoName || row.assetName || "asset-photo",
-        url,
-      };
-    });
   };
 
   return (
@@ -177,6 +175,15 @@ export default function AssetsPage() {
             />
           </div>
         )}
+      </Modal>
+
+      <Modal
+        open={Boolean(previewError)}
+        onOpenChange={(open) => !open && setPreviewError(null)}
+        title="Preview failed"
+        size="sm"
+      >
+        <p className="text-sm text-slate-600">{previewError}</p>
       </Modal>
     </>
   );
