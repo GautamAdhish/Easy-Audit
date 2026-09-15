@@ -28,7 +28,7 @@ IS-Audit-MERN/
 - Asset register with photo upload
 - Role restrictions enforced by the backend
 - Evidence upload and download
-- Local, rule-based AI narrative generation for the Summary Report page (no external API calls — see [AI narrative reports](#ai-narrative-reports))
+- OpenRouter-powered AI narrative generation for the Summary Report page
 - PDF export of reports (jsPDF)
 - Organisation/settings persistence
 - MongoDB-backed seeded demo data
@@ -38,7 +38,7 @@ IS-Audit-MERN/
 
 - Node.js 18+
 - MongoDB 6+ (local MongoDB or MongoDB Atlas)
-- Python 3 on `PATH` — required only for the AI narrative report feature (`server/scripts/generate_narrative.py`)
+- An OpenRouter API key for AI narrative generation
 
 ## 1. Start the backend
 
@@ -59,8 +59,8 @@ JWT_EXPIRES_IN=7d
 CLIENT_ORIGIN=http://localhost:5173
 SEED_ADMIN_EMAIL=admin@company.com
 SEED_ADMIN_PASSWORD=ChangeMe123!
-# Optional override if your python binary isn't named python3:
-# PYTHON_BIN=python3
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+OPENROUTER_MODEL=google/gemma-4-26b-a4b-it:free
 ```
 
 Then seed the demo data:
@@ -178,7 +178,7 @@ Do not commit `.env` files or production JWT secrets.
 
 ## AI narrative reports
 
-The Summary Report page can generate a written narrative (headline, prose, top concerns, recommendations) from the same rolled-up insights the frontend already computes (audits, findings, risks, CAPA, assets, vendors, checklist). This is handled entirely locally by `server/scripts/generate_narrative.py` — a deterministic, rule-based generator with **no external API calls** — invoked by the backend (`POST /api/ai-reports/generate`) via `python3`. No API key or internet access is required; only Python 3 on the server's `PATH`.
+The Summary Report page can generate a written narrative (headline, prose, top concerns, recommendations) from the same rolled-up insights the frontend already computes (audits, findings, risks, CAPA, assets, vendors, checklist). The backend sends those insights to OpenRouter through `POST /api/ai-reports/generate` and returns a validated JSON response. Set `OPENROUTER_API_KEY` in the server environment; the key is never exposed to the browser.
 
 ## API resources
 

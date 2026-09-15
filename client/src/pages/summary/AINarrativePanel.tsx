@@ -6,10 +6,8 @@ import type { Insights } from "./computeInsights";
 import { toNarrativePayload } from "./computeInsights";
 import type { NarrativeData } from "../../lib/exportPdf";
 
-// Calls the backend (server/scripts/generate_narrative.py, a deterministic
-// rule-based generator — see aiReportController.js) — this component never
-// generates text itself, it only triggers, loads, and renders what comes
-// back for the given report type and the already-computed insights.
+// Calls the backend OpenRouter integration — this component never generates text
+// itself, it only triggers, loads, and renders the returned narrative.
 const AINarrativePanel: React.FC<{
   reportType: "general" | "technical";
   insights: Insights;

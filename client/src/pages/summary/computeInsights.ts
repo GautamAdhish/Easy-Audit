@@ -291,8 +291,7 @@ export function computeInsights(data: SummaryData): Insights {
   };
 }
 
-// The narrative generator (server/scripts/generate_narrative.py) only ever
-// reads a subset of Insights — see that file for the exact fields. The rest
+// The narrative generator only ever reads a subset of Insights. The rest
 // (predictedRisks, riskMatrix, complianceByDept, assetCompliance,
 // vendorResidualRisk, capaByStatus, findingsByStatus) exists for the report
 // UI only and was never meant to cross the wire. Sending the full Insights

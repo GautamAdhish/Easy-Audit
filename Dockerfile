@@ -21,10 +21,6 @@ RUN npm ci --omit=dev
 # ---------- Stage 3: final runtime image ----------
 FROM node:20-alpine AS runtime
 
-# app.js shells out to `python3 server/scripts/generate_narrative.py`
-# for the AI-narrative report feature.
-RUN apk add --no-cache python3
-
 WORKDIR /app
 
 COPY --from=server-deps /app/server/node_modules ./server/node_modules
