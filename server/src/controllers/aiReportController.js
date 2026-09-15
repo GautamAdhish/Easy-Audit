@@ -78,7 +78,16 @@ ${JSON.stringify(insights)}
 
   const payload = await response.json();
   if (!response.ok) {
-    throw new Error(payload.error?.message || `OpenRouter request failed (${response.status}).`);
+    if (response.status === 401 || response.status === 403) {
+      throw new AppError('The OpenRouter API key was rejected. Check OPENROUTER_API_KEY.', 502);
+    }
+    if (response.status === 429) {
+      throw new AppError('The selected free AI model is temporarily rate-limited. Please try again shortly.', 503);
+    }
+    throw new AppError(
+      `OpenRouter could not generate the narrative (${response.status}). Please try again shortly.`,
+      502,
+    );
   }
 
   const text = payload.choices?.[0]?.message?.content;
