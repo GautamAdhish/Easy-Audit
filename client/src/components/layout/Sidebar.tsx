@@ -3,6 +3,7 @@ import { NavLink, useMatch } from "react-router-dom";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { useAuth } from "../../context/AuthContext";
 import { cn } from "../../utils/cn";
+import { getRoleDefinition } from "../../utils/roleAccess";
 import {
   LayoutDashboard,
   BookOpen,
@@ -151,9 +152,11 @@ const Sidebar: React.FC = () => {
             collapsed ? "lg:px-2" : "lg:px-2.5",
           )}
         >
-          {navItems.map((item) => (
+          {navItems
+            .filter((item) => getRoleDefinition(user?.role).navPaths.includes(item.path))
+            .map((item) => (
             <NavItem key={item.path} {...item} collapsed={collapsed} />
-          ))}
+            ))}
         </nav>
 
         <div

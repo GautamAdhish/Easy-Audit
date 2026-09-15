@@ -18,6 +18,14 @@ import LoginPage from "./pages/LoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./context/AuthContext";
+
+function UsersRoute() {
+  const { user } = useAuth();
+  const canManageUsers = user?.role === "Admin" || user?.role === "Lead Auditor";
+
+  return canManageUsers ? <UsersPage /> : <Navigate to="/dashboard" replace />;
+}
 
 export default function App() {
   return (
@@ -43,7 +51,7 @@ export default function App() {
               />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/summary" element={<SummaryPage />} />
-              <Route path="/users" element={<UsersPage />} />
+              <Route path="/users" element={<UsersRoute />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
