@@ -24,7 +24,7 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
       { label: 'Company Overview', path: '/dashboard', description: 'Review the full portfolio across companies' },
       { label: 'Reports', path: '/reports', description: 'Open all report views' },
     ],
-    navPaths: ['/dashboard', '/audit-program', '/audits', '/checklist', '/findings', '/capa', '/risks', '/evidence', '/assets', '/reports', '/users', '/settings'],
+    navPaths: ['/dashboard', '/audit-program', '/audits', '/checklist', '/findings', '/capa', '/risks', '/evidence', '/assets', '/reports', '/summary', '/users', '/settings'],
   },
   'Lead Auditor': {
     label: 'Lead Auditor',
@@ -35,7 +35,7 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
       { label: 'Teams', path: '/audit-program', description: 'Create and assign teams' },
       { label: 'Reports', path: '/reports', description: 'Review audit reports' },
     ],
-    navPaths: ['/dashboard', '/audit-program', '/audits', '/checklist', '/findings', '/capa', '/risks', '/evidence', '/assets', '/reports', '/users'],
+    navPaths: ['/dashboard', '/audit-program', '/audits', '/checklist', '/findings', '/capa', '/risks', '/evidence', '/assets', '/reports', '/summary', '/users'],
   },
   Auditor: {
     label: 'Auditor',
@@ -46,7 +46,7 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
       { label: 'Edit Records', path: '/audits', description: 'Update audit records and findings' },
       { label: 'Activity Log', path: '/dashboard', description: 'Review recent changes and status updates' },
     ],
-    navPaths: ['/dashboard', '/audit-program', '/audits', '/checklist', '/findings', '/capa', '/risks', '/evidence', '/assets', '/reports'],
+    navPaths: ['/dashboard', '/audit-program', '/audits', '/checklist', '/findings', '/capa', '/risks', '/evidence', '/assets', '/reports', '/summary'],
   },
   Viewer: {
     label: 'Viewer',
