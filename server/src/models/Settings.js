@@ -28,6 +28,14 @@ const settingsSchema = new mongoose.Schema(
       majorNcEscalationThreshold: { type: Number, default: 5 },
       riskScoreAlertThreshold: { type: Number, default: 12 },
     },
+
+    // Secret: used by aiReportController to call OpenRouter. `select: false`
+    // means it is left out of every query by default (including GET
+    // /api/settings, which any logged-in role can call) — it only comes
+    // back when a query explicitly does .select('+openRouterApiKey').
+    // Never send this value to the browser; expose only a
+    // "configured yes/no" flag instead.
+    openRouterApiKey: { type: String, select: false, trim: true, default: '' },
   },
   { timestamps: true }
 );
