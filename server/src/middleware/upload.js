@@ -7,7 +7,7 @@ import AppError from '../utils/AppError.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const createUploadDir = (subdir) => path.join(__dirname, '..', '..', 'uploads', subdir);
 
-const ALLOWED_MIME_TYPES = new Set([
+export const ALLOWED_MIME_TYPES = new Set([
   'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -25,7 +25,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-export const createUpload = (subdir = 'evidence') => {
+export const createUpload = (subdir = 'evidence', { fileFilter: fileFilterOverride } = {}) => {
   const uploadDir = createUploadDir(subdir);
   fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -40,7 +40,7 @@ export const createUpload = (subdir = 'evidence') => {
 
   return multer({
     storage,
-    fileFilter,
+    fileFilter: fileFilterOverride || fileFilter,
     limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB
   });
 };

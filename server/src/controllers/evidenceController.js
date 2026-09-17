@@ -1,6 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import Evidence from '../models/Evidence.js';
+import Finding from '../models/Finding.js';
 import createCRUDController from './crudControllerFactory.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import AppError from '../utils/AppError.js';
@@ -12,19 +13,26 @@ const base = createCRUDController(Evidence, {
   searchFields: ['title', 'tags'],
   populate: [
     { path: 'relatedAudit', select: 'code title' },
+    { path: 'relatedFinding', select: 'code title' },
     { path: 'uploadedBy', select: 'name email role' },
   ],
 });
 
-// POST /api/evidence  (multipart/form-data, field name "file")
-// Overrides the generic createOne so the uploaded file's metadata
-// (path, size, name) is captured alongside the record.
 const createOne = asyncHandler(async (req, res, next) => {
-  const { title, type, relatedAudit, tags } = req.body;
+  const { title, type, relatedFinding, tags } = req.body;
+  let { relatedAudit } = req.body;
   const uploader = req.user?._id || req.body.uploadedBy;
 
+  if (relatedFinding) {
+    const finding = await Finding.findById(relatedFinding).select('auditId');
+    if (!finding) {
+      return next(new AppError(`Finding not found with id ${relatedFinding}`, 404));
+    }
+    if (!relatedAudit) relatedAudit = String(finding.auditId);
+  }
+
   if (!title || !type || !relatedAudit || !uploader) {
-    return next(new AppError('title, type, relatedAudit and uploadedBy are required.', 400));
+    return next(new AppError('title, type, relatedAudit (or relatedFinding) and uploadedBy are required.', 400));
   }
 
   const code = await generateCode('E');
@@ -33,6 +41,7 @@ const createOne = asyncHandler(async (req, res, next) => {
     title,
     type,
     relatedAudit,
+    relatedFinding: relatedFinding || undefined,
     uploadedBy: uploader,
     tags: Array.isArray(tags) ? tags : tags ? String(tags).split(',').map((t) => t.trim()) : [],
     ...(req.file && {
@@ -45,7 +54,6 @@ const createOne = asyncHandler(async (req, res, next) => {
   res.status(201).json({ success: true, data: doc });
 });
 
-// GET /api/evidence/:id/download
 const downloadFile = asyncHandler(async (req, res, next) => {
   const doc = await Evidence.findById(req.params.id).select('+filePath fileName');
   if (!doc) return next(new AppError(`Evidence not found with id ${req.params.id}`, 404));

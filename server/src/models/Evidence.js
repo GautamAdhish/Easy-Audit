@@ -8,10 +8,14 @@ const evidenceSchema = new mongoose.Schema(
     title: { type: String, required: [true, 'Title is required'], trim: true },
     type: { type: String, enum: EVIDENCE_TYPES, required: true },
     relatedAudit: { type: mongoose.Schema.Types.ObjectId, ref: 'Audit', required: [true, 'Related audit is required'] },
+    // Set when this document was attached from the Findings page — the
+    // controller auto-fills relatedAudit from the finding when this is
+    // present, so the caller doesn't have to look it up separately.
+    relatedFinding: { type: mongoose.Schema.Types.ObjectId, ref: 'Finding' },
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: [true, 'Uploader is required'] },
     uploadedDate: { type: Date, default: Date.now },
-    fileSize: { type: String }, // human-readable, e.g. "245 KB" — set from the uploaded file when present
-    filePath: { type: String, select: false }, // server-side storage path, never sent to the client directly
+    fileSize: { type: String },
+    filePath: { type: String, select: false },
     fileName: { type: String },
     tags: { type: [String], default: [] },
   },
