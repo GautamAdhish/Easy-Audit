@@ -1,11 +1,5 @@
 import mongoose from 'mongoose';
 
-/**
- * The Settings page in the UI edits one organisation-wide configuration
- * document, not a list of records — so this collection is a singleton.
- * The controller always operates on the single document, creating it
- * with sane defaults on first read if it doesn't exist yet.
- */
 const settingsSchema = new mongoose.Schema(
   {
     organisationName: { type: String, default: 'Acme Corp Pty Ltd', trim: true },
@@ -29,13 +23,7 @@ const settingsSchema = new mongoose.Schema(
       riskScoreAlertThreshold: { type: Number, default: 12 },
     },
 
-    // Secret: used by aiReportController to call OpenRouter. `select: false`
-    // means it is left out of every query by default (including GET
-    // /api/settings, which any logged-in role can call) — it only comes
-    // back when a query explicitly does .select('+openRouterApiKey').
-    // Never send this value to the browser; expose only a
-    // "configured yes/no" flag instead.
-    openRouterApiKey: { type: String, select: false, trim: true, default: '' },
+    groqApiKey: { type: String, select: false, trim: true, default: '' },
   },
   { timestamps: true }
 );

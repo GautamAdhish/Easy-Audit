@@ -1,23 +1,18 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import AppError from '../utils/AppError.js';
+import Settings from '../models/Settings.js';
 
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'google/gemma-4-26b-a4b-it:free';
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 const NARRATIVE_FIELDS = ['headline', 'narrative', 'topConcerns', 'recommendations'];
 
-/**
- * The insights payload is computed client-side (see client/src/pages/summary/
- * computeInsights.ts) from the same data the rest of the app already shows.
- * The API key stays server-side; the browser only receives the generated
- * narrative.
- */
 const parseNarrative = (text) => {
   let parsed;
   try {
     parsed = JSON.parse(text);
   } catch {
     const jsonBlock = text.match(/\{[\s\S]*\}/)?.[0];
-    if (!jsonBlock) throw new Error('OpenRouter returned malformed narrative output.');
+    if (!jsonBlock) throw new Error('Groq returned malformed narrative output.');
     parsed = JSON.parse(jsonBlock);
   }
 
@@ -30,15 +25,21 @@ const parseNarrative = (text) => {
     !parsed.topConcerns.every((item) => typeof item === 'string') ||
     !parsed.recommendations.every((item) => typeof item === 'string')
   ) {
-    throw new Error('OpenRouter returned an invalid narrative shape.');
+    throw new Error('Groq returned an invalid narrative shape.');
   }
 
   return Object.fromEntries(NARRATIVE_FIELDS.map((field) => [field, parsed[field]]));
 };
 
-const runOpenRouterNarrative = async ({ reportType, insights }) => {
-  if (!process.env.OPENROUTER_API_KEY) {
-    throw new AppError('OPENROUTER_API_KEY is not configured on the server.', 503);
+const runGroqNarrative = async ({ reportType, insights }) => {
+  const settings = await Settings.findOne().select('+groqApiKey');
+  const apiKey = settings?.groqApiKey;
+
+  if (!apiKey) {
+    throw new AppError(
+      'No Groq API key is configured. Add one on the Settings page to enable AI narratives.',
+      503,
+    );
   }
 
   const audience = reportType === 'general' ? 'board-level readers' : 'technical auditors';
@@ -59,40 +60,85 @@ Report data:
 ${JSON.stringify(insights)}
 `.trim();
 
-  const response = await fetch(OPENROUTER_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': process.env.OPENROUTER_SITE_URL || 'http://localhost:5000',
-      'X-Title': 'Easy-Audit',
-    },
-    body: JSON.stringify({
-      model: OPENROUTER_MODEL,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.3,
-      max_tokens: 1200,
-      response_format: { type: 'json_object' },
-    }),
-  });
+  const requestBody = {
+    model: GROQ_MODEL,
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.3,
+    max_tokens: 1200,
+    response_format: { type: 'json_object' },
+    // Reasoning models (the gpt-oss family) return their chain-of-thought
+    // in <think> tags by default, which is incompatible with JSON mode —
+    // Groq requires this to be explicitly "parsed" or "hidden" whenever
+    // response_format is set, or it 400s. We only want the final answer.
+    reasoning_format: 'hidden',
+  };
 
-  const payload = await response.json();
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
-      throw new AppError('The OpenRouter API key was rejected. Check OPENROUTER_API_KEY.', 502);
+  // Groq's free tier can occasionally return 503/429 under load — retry a
+  // couple of times with a short backoff before giving up.
+  const MAX_ATTEMPTS = 3;
+  let lastStatus;
+  let payload;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    const response = await fetch(GROQ_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    payload = await response.json();
+
+    if (response.ok) {
+      lastStatus = null;
+      break;
     }
-    if (response.status === 429) {
-      throw new AppError('The selected free AI model is temporarily rate-limited. Please try again shortly.', 503);
+
+    lastStatus = response.status;
+
+    const retryable = lastStatus === 503 || lastStatus === 429;
+    if (!retryable || attempt === MAX_ATTEMPTS) break;
+
+    await new Promise((resolve) => setTimeout(resolve, attempt * 700));
+  }
+
+  if (lastStatus) {
+    const detail = payload?.error?.message;
+    if (lastStatus === 401 || lastStatus === 403) {
+      throw new AppError('The Groq API key was rejected. Update it on the Settings page.', 502);
+    }
+    if (lastStatus === 429) {
+      throw new AppError('Groq is temporarily rate-limiting this key. Please try again shortly.', 503);
+    }
+    if (lastStatus === 404) {
+      throw new AppError(
+        `Groq model "${GROQ_MODEL}" was not found or isn't available to this key. Set GROQ_MODEL to a current model (see https://console.groq.com/docs/models).`,
+        502,
+      );
+    }
+    if (lastStatus === 503) {
+      throw new AppError(
+        'Groq is temporarily overloaded and did not recover after a few retries. Please try again shortly.',
+        503,
+      );
+    }
+    if (lastStatus === 400) {
+      throw new AppError(
+        `Groq rejected the request: ${detail || 'invalid request (400)'}.`,
+        502,
+      );
     }
     throw new AppError(
-      `OpenRouter could not generate the narrative (${response.status}). Please try again shortly.`,
+      `Groq could not generate the narrative (${lastStatus}${detail ? `: ${detail}` : ''}). Please try again shortly.`,
       502,
     );
   }
 
   const text = payload.choices?.[0]?.message?.content;
   if (typeof text !== 'string' || !text.trim()) {
-    throw new Error('OpenRouter returned an empty narrative.');
+    throw new Error('Groq returned an empty narrative.');
   }
 
   return parseNarrative(text);
@@ -109,10 +155,10 @@ export const generateNarrative = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    const result = await runOpenRouterNarrative({ reportType, insights });
+    const result = await runGroqNarrative({ reportType, insights });
     res.status(200).json({ success: true, data: result });
   } catch (err) {
-    console.error('OpenRouter narrative generation error:', err.message);
+    console.error('Groq narrative generation error:', err.message);
     if (err instanceof AppError) return next(err);
     return next(new AppError('Failed to generate AI narrative. Please try again.', 502));
   }
