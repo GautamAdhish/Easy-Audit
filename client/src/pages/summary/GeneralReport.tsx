@@ -239,6 +239,7 @@ const GeneralReport: React.FC<{ insights: Insights }> = ({ insights }) => {
                   tickLine={false}
                   tickFormatter={(v) => `${v}%`}
                 />
+                {/* @ts-expect-error Recharts formatter types are incompatible with the chart value type. */}
                 <Tooltip formatter={(v: number) => [`${v}%`, "Compliance"]} />
                 <Bar dataKey="compliance" radius={[4, 4, 0, 0]} maxBarSize={48}>
                   {complianceByDept.map((entry, i) => (
@@ -247,6 +248,7 @@ const GeneralReport: React.FC<{ insights: Insights }> = ({ insights }) => {
                   <LabelList
                     dataKey="compliance"
                     position="top"
+                    // @ts-expect-error Recharts formatter types are incompatible with the chart value type.
                     formatter={(v: number) => `${v}%`}
                     style={{
                       fontSize: 10,
