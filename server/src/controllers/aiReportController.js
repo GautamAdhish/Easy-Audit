@@ -3,8 +3,23 @@ import AppError from '../utils/AppError.js';
 import Settings from '../models/Settings.js';
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+// llama-3.3-70b-versatile is noticeably more reliable at strict JSON output
+// than the gpt-oss reasoning models, which spend part of their token budget
+// "thinking" before they ever write JSON. Override with GROQ_MODEL if needed.
+const GROQ_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
 const NARRATIVE_FIELDS = ['headline', 'narrative', 'topConcerns', 'recommendations'];
+
+const NARRATIVE_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    headline: { type: 'string' },
+    narrative: { type: 'string' },
+    topConcerns: { type: 'array', items: { type: 'string' } },
+    recommendations: { type: 'array', items: { type: 'string' } },
+  },
+  required: NARRATIVE_FIELDS,
+  additionalProperties: false,
+};
 
 const parseNarrative = (text) => {
   let parsed;
@@ -64,8 +79,24 @@ ${JSON.stringify(insights)}
     model: GROQ_MODEL,
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.3,
-    max_tokens: 1200,
-    response_format: { type: 'json_object' },
+    // Reasoning models spend part of this budget on hidden chain-of-thought
+    // before writing the JSON answer, so give it real headroom - a tight
+    // budget is the most common cause of "Failed to generate JSON" (the
+    // model gets cut off mid-object and the partial output fails to parse).
+    max_tokens: 2500,
+    // json_schema + strict is Groq's stricter structured-output mode
+    // (constrained decoding on supported models). It's not literally
+    // failure-proof, but it validates against an explicit schema instead
+    // of the looser "some JSON object" contract that json_object uses,
+    // which is what was tripping the validator before.
+    response_format: {
+      type: 'json_schema',
+      json_schema: {
+        name: 'audit_narrative',
+        strict: true,
+        schema: NARRATIVE_JSON_SCHEMA,
+      },
+    },
     // Reasoning models (the gpt-oss family) return their chain-of-thought
     // in <think> tags by default, which is incompatible with JSON mode —
     // Groq requires this to be explicitly "parsed" or "hidden" whenever
@@ -73,10 +104,13 @@ ${JSON.stringify(insights)}
     reasoning_format: 'hidden',
   };
 
-  // Groq's free tier can occasionally return 503/429 under load — retry a
-  // couple of times with a short backoff before giving up.
+  // Groq's free tier can occasionally return 503/429 under load, and
+  // json_validate_failed is usually a one-off sampling fluke rather than a
+  // deterministic failure - retry a couple of times with a short backoff
+  // before giving up on any of these.
   const MAX_ATTEMPTS = 3;
   let lastStatus;
+  let lastCode;
   let payload;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
@@ -93,12 +127,17 @@ ${JSON.stringify(insights)}
 
     if (response.ok) {
       lastStatus = null;
+      lastCode = null;
       break;
     }
 
     lastStatus = response.status;
+    lastCode = payload?.error?.code;
 
-    const retryable = lastStatus === 503 || lastStatus === 429;
+    const retryable =
+      lastStatus === 503 ||
+      lastStatus === 429 ||
+      lastCode === 'json_validate_failed';
     if (!retryable || attempt === MAX_ATTEMPTS) break;
 
     await new Promise((resolve) => setTimeout(resolve, attempt * 700));
@@ -122,6 +161,12 @@ ${JSON.stringify(insights)}
       throw new AppError(
         'Groq is temporarily overloaded and did not recover after a few retries. Please try again shortly.',
         503,
+      );
+    }
+    if (lastCode === 'json_validate_failed') {
+      throw new AppError(
+        'Groq could not produce a valid narrative after a few retries. Try again, or switch GROQ_MODEL to a non-reasoning model such as llama-3.3-70b-versatile.',
+        502,
       );
     }
     if (lastStatus === 400) {
