@@ -45,23 +45,35 @@ export function useSummaryData(): SummaryData {
   useEffect(() => {
     let cancelled = false;
     Promise.all(RESOURCES.map((r) => resourceApi(r).list("limit=1000")))
-      .then(([audits, findings, risks, capas, assets, vendors, checklist, evidence]) => {
-        if (cancelled) return;
-        setState({
-          audits: audits.data || [],
-          findings: findings.data || [],
-          risks: risks.data || [],
-          capas: capas.data || [],
-          assets: assets.data || [],
-          vendors: vendors.data || [],
-          checklist: checklist.data || [],
-          evidence: evidence.data || [],
-          loading: false,
-          error: "",
-        });
-      })
+      .then(
+        ([
+          audits,
+          findings,
+          risks,
+          capas,
+          assets,
+          vendors,
+          checklist,
+          evidence,
+        ]) => {
+          if (cancelled) return;
+          setState({
+            audits: audits.data || [],
+            findings: findings.data || [],
+            risks: risks.data || [],
+            capas: capas.data || [],
+            assets: assets.data || [],
+            vendors: vendors.data || [],
+            checklist: checklist.data || [],
+            evidence: evidence.data || [],
+            loading: false,
+            error: "",
+          });
+        },
+      )
       .catch((e) => {
-        if (!cancelled) setState((s) => ({ ...s, loading: false, error: e.message }));
+        if (!cancelled)
+          setState((s) => ({ ...s, loading: false, error: e.message }));
       });
     return () => {
       cancelled = true;

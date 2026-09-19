@@ -17,14 +17,14 @@ class APIFeatures {
   }
 
   filter() {
-    const excluded = ['page', 'sort', 'limit', 'fields', 'search'];
+    const excluded = ["page", "sort", "limit", "fields", "search"];
     const queryObj = { ...this.queryString };
     excluded.forEach((field) => delete queryObj[field]);
 
     // Drop empty-string / "All" filter values coming from the frontend's
     // "All" dropdown option so they don't over-constrain the query.
     Object.keys(queryObj).forEach((key) => {
-      if (queryObj[key] === '' || queryObj[key] === 'All') delete queryObj[key];
+      if (queryObj[key] === "" || queryObj[key] === "All") delete queryObj[key];
     });
 
     this.query = this.query.find(queryObj);
@@ -34,7 +34,10 @@ class APIFeatures {
   search() {
     const { search } = this.queryString;
     if (search && this.searchFields.length > 0) {
-      const regex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      const regex = new RegExp(
+        search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+        "i",
+      );
       this.query = this.query.find({
         $or: this.searchFields.map((field) => ({ [field]: regex })),
       });
@@ -44,20 +47,20 @@ class APIFeatures {
 
   sort() {
     if (this.queryString.sort) {
-      const sortBy = this.queryString.sort.split(',').join(' ');
+      const sortBy = this.queryString.sort.split(",").join(" ");
       this.query = this.query.sort(sortBy);
     } else {
-      this.query = this.query.sort('-createdAt');
+      this.query = this.query.sort("-createdAt");
     }
     return this;
   }
 
   limitFields() {
     if (this.queryString.fields) {
-      const fields = this.queryString.fields.split(',').join(' ');
+      const fields = this.queryString.fields.split(",").join(" ");
       this.query = this.query.select(fields);
     } else {
-      this.query = this.query.select('-__v');
+      this.query = this.query.select("-__v");
     }
     return this;
   }

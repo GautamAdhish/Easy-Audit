@@ -14,7 +14,10 @@ import { api } from "../lib/api";
 import { Upload, Download, FileText, Search, FolderOpen } from "lucide-react";
 
 const DOC_TYPES = ["Policy", "Procedure", "Record", "Report", "Certificate"];
-const DOC_TYPE_TONES: Record<string, "blue" | "purple" | "amber" | "green" | "indigo"> = {
+const DOC_TYPE_TONES: Record<
+  string,
+  "blue" | "purple" | "amber" | "green" | "indigo"
+> = {
   Policy: "blue",
   Procedure: "purple",
   Record: "amber",
@@ -141,7 +144,13 @@ export default function EvidencePage() {
 
       {rows.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
-          <StatTile variant="card" tone="blue" icon={FileText} label="Total Documents" value={rows.length} />
+          <StatTile
+            variant="card"
+            tone="blue"
+            icon={FileText}
+            label="Total Documents"
+            value={rows.length}
+          />
           {DOC_TYPES.map((t) => (
             <StatTile
               key={t}
@@ -189,20 +198,30 @@ export default function EvidencePage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map((r) => (
-            <div key={r._id} className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+            <div
+              key={r._id}
+              className="bg-white rounded-xl border border-slate-200 shadow-sm p-4"
+            >
               <div className="flex justify-between mb-3">
                 <div className="w-9 h-9 rounded-lg bg-slate-50 grid place-items-center">
                   <FileText className="w-4 h-4 text-ink-700" />
                 </div>
                 <Badge label={r.type} />
               </div>
-              <h3 className="text-sm font-semibold text-slate-800">{r.title}</h3>
+              <h3 className="text-sm font-semibold text-slate-800">
+                {r.title}
+              </h3>
               <p className="text-xs text-slate-400 mt-1">
                 {r.uploadedBy?.name || "—"} · {r.fileSize || "—"}
               </p>
               <p className="text-xs text-slate-500 mt-2">
                 Audit: {r.relatedAudit?.code || "—"}
               </p>
+              {r.relatedFinding?.code && (
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Finding: {r.relatedFinding.code}
+                </p>
+              )}
               {r.fileName ? (
                 <button
                   type="button"

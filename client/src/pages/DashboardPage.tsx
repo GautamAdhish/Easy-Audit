@@ -1,9 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ClipboardList, Loader, CheckCircle, AlertCircle, AlertTriangle,
-  XCircle, MinusCircle, Eye, Clock, TrendingUp, ShieldAlert, FileText,
-  Plus, Users2, type LucideIcon,
+  ClipboardList,
+  Loader,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  XCircle,
+  MinusCircle,
+  Eye,
+  Clock,
+  TrendingUp,
+  ShieldAlert,
+  FileText,
+  Plus,
+  Users2,
+  type LucideIcon,
 } from "lucide-react";
 import { api } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
@@ -16,16 +28,33 @@ import Button from "../components/common/Button";
 import StatTile from "../components/common/StatTile";
 import IconChip from "../components/common/IconChip";
 import AvatarStack from "../components/common/AvatarStack";
-import DataTable, { type DataTableColumn } from "../components/common/DataTable";
+import DataTable, {
+  type DataTableColumn,
+} from "../components/common/DataTable";
 import LoadingState from "../components/common/LoadingState";
 import Alert from "../components/common/Alert";
 
 const iconMap: Record<string, LucideIcon> = {
-  ClipboardList, Loader, CheckCircle, AlertCircle, AlertTriangle,
-  XCircle, MinusCircle, Eye, Clock, TrendingUp, ShieldAlert, FileText,
+  ClipboardList,
+  Loader,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  XCircle,
+  MinusCircle,
+  Eye,
+  Clock,
+  TrendingUp,
+  ShieldAlert,
+  FileText,
 };
 
-type StatCard = { label: string; value: number | string; color: string; icon: string };
+type StatCard = {
+  label: string;
+  value: number | string;
+  color: string;
+  icon: string;
+};
 
 type Audit = {
   _id: string;
@@ -37,8 +66,16 @@ type Audit = {
   compliance?: number;
 };
 
-const statusChipTone = (status: string): "green" | "red" | "amber" | "neutral" =>
-  status === "Completed" ? "green" : status === "Overdue" ? "red" : status === "In Progress" ? "amber" : "neutral";
+const statusChipTone = (
+  status: string,
+): "green" | "red" | "amber" | "neutral" =>
+  status === "Completed"
+    ? "green"
+    : status === "Overdue"
+      ? "red"
+      : status === "In Progress"
+        ? "amber"
+        : "neutral";
 
 const columns: DataTableColumn<Audit>[] = [
   {
@@ -92,16 +129,23 @@ export default function DashboardPage() {
   if (loading) return <LoadingState message="Loading dashboard…" />;
 
   const complianceCard = data.statCards.find((c) => c.label === "Compliance");
-  const complianceValue = complianceCard ? parseInt(String(complianceCard.value), 10) || 0 : 0;
+  const complianceValue = complianceCard
+    ? parseInt(String(complianceCard.value), 10) || 0
+    : 0;
   const otherStats = data.statCards.filter((c) => c.label !== "Compliance");
-  const auditorNames = audits.map((a) => a.auditor?.name).filter(Boolean) as string[];
+  const auditorNames = audits
+    .map((a) => a.auditor?.name)
+    .filter(Boolean) as string[];
 
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
         <div>
           <h1 className="text-[28px] font-bold text-ink-900 tracking-tight leading-tight">
-            Welcome back, <span className="text-slate-400">{user?.name?.split(" ")[0] || "there"}</span>
+            Welcome back,{" "}
+            <span className="text-slate-400">
+              {user?.name?.split(" ")[0] || "there"}
+            </span>
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             Live overview from the IS Audit database
@@ -131,12 +175,20 @@ export default function DashboardPage() {
             footer={
               <div className="flex gap-2">
                 <Link to="/findings" className="flex-1">
-                  <Button variant="primary" size="sm" className="w-full justify-center">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="w-full justify-center"
+                  >
                     View Findings
                   </Button>
                 </Link>
                 <Link to="/capa" className="flex-1">
-                  <Button variant="secondary" size="sm" className="w-full justify-center">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="w-full justify-center"
+                  >
                     View CAPA
                   </Button>
                 </Link>
@@ -161,18 +213,25 @@ export default function DashboardPage() {
         </div>
         <div className="lg:col-span-3">
           <Card className="h-full">
-            <CardHeader title="Assigned Auditors" subtitle="Across recent audits" />
+            <CardHeader
+              title="Assigned Auditors"
+              subtitle="Across recent audits"
+            />
             <CardBody className="pt-0">
               {auditorNames.length ? (
                 <>
                   <AvatarStack names={auditorNames} max={5} />
                   <p className="text-xs text-slate-400 mt-4 flex items-center gap-1.5">
                     <Users2 className="w-3.5 h-3.5" />
-                    {new Set(auditorNames).size} auditor{new Set(auditorNames).size === 1 ? "" : "s"} on recent audits
+                    {new Set(auditorNames).size} auditor
+                    {new Set(auditorNames).size === 1 ? "" : "s"} on recent
+                    audits
                   </p>
                 </>
               ) : (
-                <p className="text-xs text-slate-400">No auditors assigned yet.</p>
+                <p className="text-xs text-slate-400">
+                  No auditors assigned yet.
+                </p>
               )}
             </CardBody>
           </Card>
@@ -181,7 +240,10 @@ export default function DashboardPage() {
 
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-800">Recent Audits</h3>
-        <Link to="/audits" className="text-xs font-medium text-ink-700 hover:text-ink-900">
+        <Link
+          to="/audits"
+          className="text-xs font-medium text-ink-700 hover:text-ink-900"
+        >
           View all →
         </Link>
       </div>

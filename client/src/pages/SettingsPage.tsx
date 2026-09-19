@@ -73,7 +73,11 @@ export default function SettingsPage() {
   };
 
   const removeApiKey = async () => {
-    if (!window.confirm("Remove the saved Groq API key? AI report narratives will stop working until a new key is added.")) {
+    if (
+      !window.confirm(
+        "Remove the saved Groq API key? AI report narratives will stop working until a new key is added.",
+      )
+    ) {
       return;
     }
     setRemovingKey(true);

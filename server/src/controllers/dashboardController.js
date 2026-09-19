@@ -1,11 +1,24 @@
-import Audit from '../models/Audit.js';
-import Finding from '../models/Finding.js';
-import Capa from '../models/Capa.js';
-import Risk from '../models/Risk.js';
-import Evidence from '../models/Evidence.js';
-import asyncHandler from '../utils/asyncHandler.js';
+import Audit from "../models/Audit.js";
+import Finding from "../models/Finding.js";
+import Capa from "../models/Capa.js";
+import Risk from "../models/Risk.js";
+import Evidence from "../models/Evidence.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 /**
  * Reproduces the shape of the frontend's static `statCards` array
@@ -28,42 +41,86 @@ const buildStatCards = async () => {
     documents,
   ] = await Promise.all([
     Audit.countDocuments(),
-    Audit.countDocuments({ status: 'In Progress' }),
-    Audit.countDocuments({ status: 'Completed' }),
-    Audit.countDocuments({ status: 'Overdue' }),
+    Audit.countDocuments({ status: "In Progress" }),
+    Audit.countDocuments({ status: "Completed" }),
+    Audit.countDocuments({ status: "Overdue" }),
     Finding.countDocuments(),
-    Finding.countDocuments({ severity: 'Major' }),
-    Finding.countDocuments({ severity: 'Minor' }),
-    Finding.countDocuments({ severity: 'Observation' }),
-    Capa.countDocuments({ status: { $in: ['Open', 'In Progress'] } }),
-    Audit.aggregate([{ $match: { compliance: { $gt: 0 } } }, { $group: { _id: null, avg: { $avg: '$compliance' } } }]),
-    Risk.countDocuments({ level: { $in: ['High', 'Critical'] } }),
+    Finding.countDocuments({ severity: "Major" }),
+    Finding.countDocuments({ severity: "Minor" }),
+    Finding.countDocuments({ severity: "Observation" }),
+    Capa.countDocuments({ status: { $in: ["Open", "In Progress"] } }),
+    Audit.aggregate([
+      { $match: { compliance: { $gt: 0 } } },
+      { $group: { _id: null, avg: { $avg: "$compliance" } } },
+    ]),
+    Risk.countDocuments({ level: { $in: ["High", "Critical"] } }),
     Evidence.countDocuments(),
   ]);
 
   const avgCompliance = complianceAgg[0] ? Math.round(complianceAgg[0].avg) : 0;
 
   return [
-    { label: 'Total Audits', value: totalAudits, color: 'blue', icon: 'ClipboardList' },
-    { label: 'In Progress', value: inProgress, color: 'amber', icon: 'Loader' },
-    { label: 'Completed', value: completed, color: 'green', icon: 'CheckCircle' },
-    { label: 'Overdue', value: overdue, color: 'red', icon: 'AlertCircle' },
-    { label: 'Total Nonconformities', value: totalNonconformities, color: 'purple', icon: 'AlertTriangle' },
-    { label: 'Major NCs', value: majorNCs, color: 'red', icon: 'XCircle' },
-    { label: 'Minor NCs', value: minorNCs, color: 'amber', icon: 'MinusCircle' },
-    { label: 'Observations', value: observations, color: 'blue', icon: 'Eye' },
-    { label: 'CAPA Pending', value: capaPending, color: 'orange', icon: 'Clock' },
-    { label: 'Compliance', value: `${avgCompliance}%`, color: 'green', icon: 'TrendingUp' },
-    { label: 'High Risks', value: highRisks, color: 'red', icon: 'ShieldAlert' },
-    { label: 'Documents', value: documents, color: 'indigo', icon: 'FileText' },
+    {
+      label: "Total Audits",
+      value: totalAudits,
+      color: "blue",
+      icon: "ClipboardList",
+    },
+    { label: "In Progress", value: inProgress, color: "amber", icon: "Loader" },
+    {
+      label: "Completed",
+      value: completed,
+      color: "green",
+      icon: "CheckCircle",
+    },
+    { label: "Overdue", value: overdue, color: "red", icon: "AlertCircle" },
+    {
+      label: "Total Nonconformities",
+      value: totalNonconformities,
+      color: "purple",
+      icon: "AlertTriangle",
+    },
+    { label: "Major NCs", value: majorNCs, color: "red", icon: "XCircle" },
+    {
+      label: "Minor NCs",
+      value: minorNCs,
+      color: "amber",
+      icon: "MinusCircle",
+    },
+    { label: "Observations", value: observations, color: "blue", icon: "Eye" },
+    {
+      label: "CAPA Pending",
+      value: capaPending,
+      color: "orange",
+      icon: "Clock",
+    },
+    {
+      label: "Compliance",
+      value: `${avgCompliance}%`,
+      color: "green",
+      icon: "TrendingUp",
+    },
+    {
+      label: "High Risks",
+      value: highRisks,
+      color: "red",
+      icon: "ShieldAlert",
+    },
+    { label: "Documents", value: documents, color: "indigo", icon: "FileText" },
   ];
 };
 
 /** Average audit compliance grouped by department. */
 const buildComplianceByDepartment = () =>
   Audit.aggregate([
-    { $group: { _id: '$department', compliance: { $avg: '$compliance' } } },
-    { $project: { _id: 0, department: '$_id', compliance: { $round: ['$compliance', 0] } } },
+    { $group: { _id: "$department", compliance: { $avg: "$compliance" } } },
+    {
+      $project: {
+        _id: 0,
+        department: "$_id",
+        compliance: { $round: ["$compliance", 0] },
+      },
+    },
     { $sort: { department: 1 } },
   ]);
 
@@ -78,7 +135,11 @@ const buildNcTrend = async () => {
     { $match: { dateFound: { $gte: since } } },
     {
       $group: {
-        _id: { month: { $month: '$dateFound' }, year: { $year: '$dateFound' }, severity: '$severity' },
+        _id: {
+          month: { $month: "$dateFound" },
+          year: { $year: "$dateFound" },
+          severity: "$severity",
+        },
         count: { $sum: 1 },
       },
     },
@@ -93,12 +154,18 @@ const buildNcTrend = async () => {
   }
 
   return months.map(({ month, year }) => {
-    const find = (severity) => rows.find((r) => r._id.month === month && r._id.year === year && r._id.severity === severity);
+    const find = (severity) =>
+      rows.find(
+        (r) =>
+          r._id.month === month &&
+          r._id.year === year &&
+          r._id.severity === severity,
+      );
     return {
       month: MONTH_LABELS[month - 1],
-      major: find('Major')?.count || 0,
-      minor: find('Minor')?.count || 0,
-      observation: find('Observation')?.count || 0,
+      major: find("Major")?.count || 0,
+      minor: find("Minor")?.count || 0,
+      observation: find("Observation")?.count || 0,
     };
   });
 };
@@ -128,5 +195,10 @@ export const getOverview = asyncHandler(async (req, res) => {
     buildComplianceByDepartment(),
     buildNcTrend(),
   ]);
-  res.status(200).json({ success: true, data: { statCards, complianceByDepartment, ncTrend } });
+  res
+    .status(200)
+    .json({
+      success: true,
+      data: { statCards, complianceByDepartment, ncTrend },
+    });
 });

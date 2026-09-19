@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 /**
  * Opens the Mongoose connection to MongoDB.
@@ -7,13 +7,15 @@ import mongoose from 'mongoose';
  */
 const connectDB = async () => {
   try {
-    mongoose.set('strictQuery', true);
+    mongoose.set("strictQuery", true);
 
     const conn = await mongoose.connect(process.env.MONGO_URI);
 
-    console.log(`MongoDB connected: ${conn.connection.host}/${conn.connection.name}`);
+    console.log(
+      `MongoDB connected: ${conn.connection.host}/${conn.connection.name}`,
+    );
 
-    mongoose.connection.on('error', (err) => {
+    mongoose.connection.on("error", (err) => {
       console.error(`MongoDB connection error: ${err.message}`);
     });
 

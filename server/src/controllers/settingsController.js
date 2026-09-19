@@ -1,8 +1,8 @@
-import Settings from '../models/Settings.js';
-import asyncHandler from '../utils/asyncHandler.js';
+import Settings from "../models/Settings.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 const getSingleton = async () => {
-  let settings = await Settings.findOne().select('+groqApiKey');
+  let settings = await Settings.findOne().select("+groqApiKey");
   if (!settings) {
     settings = await Settings.create({});
   }
@@ -34,7 +34,8 @@ export const updateSettings = asyncHandler(async (req, res) => {
     groqApiKey,
   } = req.body;
 
-  if (organisationName !== undefined) settings.organisationName = organisationName;
+  if (organisationName !== undefined)
+    settings.organisationName = organisationName;
   if (industry !== undefined) settings.industry = industry;
   if (primaryStandard !== undefined) settings.primaryStandard = primaryStandard;
   if (auditCycle !== undefined) settings.auditCycle = auditCycle;

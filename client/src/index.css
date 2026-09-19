@@ -7,7 +7,8 @@
   component already referencing them repaints for free.
 */
 @theme {
-  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans:
+    "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
 
   --color-ink-950: #26262f;
@@ -17,7 +18,7 @@
   --color-ink-600: #575763;
   --color-ink-500: #6d6d7a;
 
-  --color-brass-50:  #eefbea;
+  --color-brass-50: #eefbea;
   --color-brass-100: #d8f5cd;
   --color-brass-400: #74c948;
   --color-brass-500: #4caf37;

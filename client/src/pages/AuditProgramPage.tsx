@@ -50,9 +50,22 @@ export default function AuditProgramPage() {
 
       {audits.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-          <StatTile variant="card" tone="blue" icon={BookOpen} label="Total Audits" value={audits.length} />
+          <StatTile
+            variant="card"
+            tone="blue"
+            icon={BookOpen}
+            label="Total Audits"
+            value={audits.length}
+          />
           {statusCounts.map(({ status, count }) => (
-            <StatTile key={status} variant="card" icon={BookOpen} tone={STATUS_TONES[status]} label={status} value={count} />
+            <StatTile
+              key={status}
+              variant="card"
+              icon={BookOpen}
+              tone={STATUS_TONES[status]}
+              label={status}
+              value={count}
+            />
           ))}
         </div>
       )}
@@ -60,7 +73,9 @@ export default function AuditProgramPage() {
       <Card className="mb-5">
         <CardBody>
           <div className="flex justify-between mb-3">
-            <span className="text-sm font-semibold text-ink-900">Annual Program Progress</span>
+            <span className="text-sm font-semibold text-ink-900">
+              Annual Program Progress
+            </span>
             <span className="text-sm font-bold text-ink-900">
               {completed}/{audits.length} completed
             </span>

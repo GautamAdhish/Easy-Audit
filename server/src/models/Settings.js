@@ -1,11 +1,19 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const settingsSchema = new mongoose.Schema(
   {
-    organisationName: { type: String, default: 'Acme Corp Pty Ltd', trim: true },
-    industry: { type: String, default: 'Information Technology', trim: true },
-    primaryStandard: { type: String, default: 'ISO/IEC 27001:2022', trim: true },
-    auditCycle: { type: String, default: 'Annual', trim: true },
+    organisationName: {
+      type: String,
+      default: "Acme Corp Pty Ltd",
+      trim: true,
+    },
+    industry: { type: String, default: "Information Technology", trim: true },
+    primaryStandard: {
+      type: String,
+      default: "ISO/IEC 27001:2022",
+      trim: true,
+    },
+    auditCycle: { type: String, default: "Annual", trim: true },
 
     notifications: {
       auditOverdueAlerts: { type: Boolean, default: true },
@@ -23,9 +31,9 @@ const settingsSchema = new mongoose.Schema(
       riskScoreAlertThreshold: { type: Number, default: 12 },
     },
 
-    groqApiKey: { type: String, select: false, trim: true, default: '' },
+    groqApiKey: { type: String, select: false, trim: true, default: "" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export default mongoose.model('Settings', settingsSchema);
+export default mongoose.model("Settings", settingsSchema);

@@ -13,7 +13,9 @@ const AINarrativePanel: React.FC<{
   insights: Insights;
   onNarrativeChange?: (data: NarrativeData | null) => void;
 }> = ({ reportType, insights, onNarrativeChange }) => {
-  const [state, setState] = useState<"idle" | "loading" | "error" | "done">("idle");
+  const [state, setState] = useState<"idle" | "loading" | "error" | "done">(
+    "idle",
+  );
   const [data, setData] = useState<NarrativeData | null>(null);
   const [error, setError] = useState("");
 
@@ -44,9 +46,14 @@ const AINarrativePanel: React.FC<{
               <Sparkles className="w-4 h-4 text-brass-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-ink-900">AI Executive Narrative</p>
+              <p className="text-sm font-semibold text-ink-900">
+                AI Executive Narrative
+              </p>
               <p className="text-xs text-slate-500">
-                Written by AI from this audit's live data — {reportType === "general" ? "board-level, plain language" : "technical, for auditors"}
+                Written by AI from this audit's live data —{" "}
+                {reportType === "general"
+                  ? "board-level, plain language"
+                  : "technical, for auditors"}
               </p>
             </div>
           </div>
@@ -56,7 +63,9 @@ const AINarrativePanel: React.FC<{
               disabled={state === "loading"}
               className="print:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-ink-900 hover:bg-slate-50 transition disabled:opacity-50"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${state === "loading" ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${state === "loading" ? "animate-spin" : ""}`}
+              />
               Regenerate
             </button>
           )}
@@ -86,7 +95,10 @@ const AINarrativePanel: React.FC<{
             <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
             <div>
               <p>{error}</p>
-              <button onClick={generate} className="text-xs underline mt-1 print:hidden">
+              <button
+                onClick={generate}
+                className="text-xs underline mt-1 print:hidden"
+              >
                 Try again
               </button>
             </div>
@@ -95,7 +107,9 @@ const AINarrativePanel: React.FC<{
 
         {state === "done" && data && (
           <div className="mt-3 space-y-4">
-            <p className="text-sm font-semibold text-ink-900">{data.headline}</p>
+            <p className="text-sm font-semibold text-ink-900">
+              {data.headline}
+            </p>
             <div className="space-y-2">
               {data.narrative.split("\n\n").map((p, i) => (
                 <p key={i} className="text-sm text-slate-600 leading-relaxed">
@@ -106,7 +120,9 @@ const AINarrativePanel: React.FC<{
             {data.topConcerns?.length > 0 && (
               <div>
                 <p className="text-xs font-semibold text-ink-900 uppercase tracking-wide mb-1.5">
-                  {reportType === "general" ? "Top Concerns" : "Highest-Priority Exposures"}
+                  {reportType === "general"
+                    ? "Top Concerns"
+                    : "Highest-Priority Exposures"}
                 </p>
                 <ul className="space-y-1">
                   {data.topConcerns.map((c, i) => (
@@ -120,7 +136,9 @@ const AINarrativePanel: React.FC<{
             )}
             {data.recommendations?.length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-ink-900 uppercase tracking-wide mb-1.5">Recommendations</p>
+                <p className="text-xs font-semibold text-ink-900 uppercase tracking-wide mb-1.5">
+                  Recommendations
+                </p>
                 <ul className="space-y-1">
                   {data.recommendations.map((r, i) => (
                     <li key={i} className="text-sm text-slate-600 flex gap-2">

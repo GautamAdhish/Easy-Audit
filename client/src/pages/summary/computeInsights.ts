@@ -27,7 +27,12 @@ export interface Insights {
   findingsBySeverity: { name: string; value: number; color: string }[];
   findingsByStatus: { name: string; value: number; color: string }[];
   risksByLevel: { name: string; value: number; color: string }[];
-  riskMatrix: { likelihood: number; impact: number; count: number; z: number }[];
+  riskMatrix: {
+    likelihood: number;
+    impact: number;
+    count: number;
+    z: number;
+  }[];
   capaByStatus: { name: string; value: number; color: string }[];
   complianceByDept: { department: string; compliance: number }[];
   assetCompliance: { name: string; value: number; color: string }[];
@@ -92,24 +97,41 @@ export function computeInsights(data: SummaryData): Insights {
   const criticalOpenRisks = openRisks
     .filter((r) => r.level === "Critical" || r.level === "High")
     .sort((a, b) => (b.riskScore || 0) - (a.riskScore || 0));
-  const riskMatrixMap: Record<string, { likelihood: number; impact: number; count: number }> = {};
+  const riskMatrixMap: Record<
+    string,
+    { likelihood: number; impact: number; count: number }
+  > = {};
   risks.forEach((r) => {
     const k = `${r.likelihood}-${r.impact}`;
-    if (!riskMatrixMap[k]) riskMatrixMap[k] = { likelihood: r.likelihood, impact: r.impact, count: 0 };
+    if (!riskMatrixMap[k])
+      riskMatrixMap[k] = {
+        likelihood: r.likelihood,
+        impact: r.impact,
+        count: 0,
+      };
     riskMatrixMap[k].count += 1;
   });
-  const riskMatrix = Object.values(riskMatrixMap).map((r) => ({ ...r, z: r.count }));
+  const riskMatrix = Object.values(riskMatrixMap).map((r) => ({
+    ...r,
+    z: r.count,
+  }));
 
   // --- CAPA ---
   const capaByStatus = tally(capas, "status", STATUS_COLORS);
   const now = new Date();
   const overdueCapas = capas.filter(
-    (c) => c.status !== "Closed" && c.status !== "Verified" && c.dueDate && new Date(c.dueDate) < now
+    (c) =>
+      c.status !== "Closed" &&
+      c.status !== "Verified" &&
+      c.dueDate &&
+      new Date(c.dueDate) < now,
   );
 
   // --- Assets ---
   const nonCompliantAssets = assets.filter(
-    (a) => a.assessmentStatus === "Non-Compliant" || a.assessmentStatus === "Needs Review"
+    (a) =>
+      a.assessmentStatus === "Non-Compliant" ||
+      a.assessmentStatus === "Needs Review",
   );
   const assetCompliance = tally(assets, "assessmentStatus", {
     Pass: "#4caf37",
@@ -119,12 +141,14 @@ export function computeInsights(data: SummaryData): Insights {
   });
 
   // --- Vendors ---
-  const highRiskVendors = vendors.filter((v) => v.residualRisk === "Critical" || v.residualRisk === "High");
+  const highRiskVendors = vendors.filter(
+    (v) => v.residualRisk === "Critical" || v.residualRisk === "High",
+  );
   const vendorResidualRisk = tally(vendors, "residualRisk", RISK_COLORS);
 
   // --- Checklist / compliance ---
   const nonCompliantChecklist = checklist.filter(
-    (c) => c.status === "Non-Compliant" || c.status === "Partial"
+    (c) => c.status === "Non-Compliant" || c.status === "Partial",
   );
   const deptMap: Record<string, { compliant: number; total: number }> = {};
   checklist.forEach((c) => {
@@ -135,12 +159,17 @@ export function computeInsights(data: SummaryData): Insights {
   });
   const complianceByDept =
     audits.length > 0
-      ? Array.from(new Set(audits.map((a) => a.department))).map((department) => {
-          const deptAudits = audits.filter((a) => a.department === department);
-          const avg =
-            deptAudits.reduce((sum, a) => sum + (a.compliance || 0), 0) / deptAudits.length;
-          return { department, compliance: Math.round(avg) };
-        })
+      ? Array.from(new Set(audits.map((a) => a.department))).map(
+          (department) => {
+            const deptAudits = audits.filter(
+              (a) => a.department === department,
+            );
+            const avg =
+              deptAudits.reduce((sum, a) => sum + (a.compliance || 0), 0) /
+              deptAudits.length;
+            return { department, compliance: Math.round(avg) };
+          },
+        )
       : Object.entries(deptMap).map(([department, v]) => ({
           department,
           compliance: pct(v.compliant, v.total),
@@ -148,26 +177,34 @@ export function computeInsights(data: SummaryData): Insights {
 
   const avgCompliance =
     audits.length > 0
-      ? Math.round(audits.reduce((s, a) => s + (a.compliance || 0), 0) / audits.length)
+      ? Math.round(
+          audits.reduce((s, a) => s + (a.compliance || 0), 0) / audits.length,
+        )
       : 100 - pct(nonCompliantChecklist.length, checklist.length || 1);
 
   const auditsCompleted = audits.filter((a) => a.status === "Completed").length;
 
   // --- Vulnerability areas (the "how vulnerable, by how much, how to fix" table) ---
-  const rawVulnerabilityAreas: Omit<VulnerabilityArea, "trajectory" | "predictedScore">[] = [
+  const rawVulnerabilityAreas: Omit<
+    VulnerabilityArea,
+    "trajectory" | "predictedScore"
+  >[] = [
     {
       key: "checklist",
       label: "Compliance Checklist",
       exposurePct: pct(nonCompliantChecklist.length, checklist.length || 1),
       severityScore: pct(
         checklist.filter((c) => c.status === "Non-Compliant").length,
-        checklist.length || 1
+        checklist.length || 1,
       ),
       openCount: nonCompliantChecklist.length,
       totalCount: checklist.length,
       topFixes: nonCompliantChecklist
         .slice(0, 3)
-        .map((c) => `${c.clause}: ${c.title} — provide/renew evidence and close gap`),
+        .map(
+          (c) =>
+            `${c.clause}: ${c.title} — provide/renew evidence and close gap`,
+        ),
     },
     {
       key: "findings",
@@ -176,7 +213,12 @@ export function computeInsights(data: SummaryData): Insights {
       severityScore: pct(majorOpenFindings.length, findings.length || 1),
       openCount: openFindings.length,
       totalCount: findings.length,
-      topFixes: majorOpenFindings.slice(0, 3).map((f) => `${f.code || ""} ${f.title} — remediate before ${f.dueDate ? new Date(f.dueDate).toLocaleDateString() : "due date"}`),
+      topFixes: majorOpenFindings
+        .slice(0, 3)
+        .map(
+          (f) =>
+            `${f.code || ""} ${f.title} — remediate before ${f.dueDate ? new Date(f.dueDate).toLocaleDateString() : "due date"}`,
+        ),
     },
     {
       key: "risks",
@@ -187,21 +229,28 @@ export function computeInsights(data: SummaryData): Insights {
       totalCount: risks.length,
       topFixes: criticalOpenRisks
         .slice(0, 3)
-        .map((r) => `${r.code || ""} ${r.title} — ${r.mitigationPlan || "mitigation plan needed"}`),
+        .map(
+          (r) =>
+            `${r.code || ""} ${r.title} — ${r.mitigationPlan || "mitigation plan needed"}`,
+        ),
     },
     {
       key: "capa",
       label: "CAPA (Corrective/Preventive Actions)",
       exposurePct: pct(
-        capas.filter((c) => c.status !== "Closed" && c.status !== "Verified").length,
-        capas.length || 1
+        capas.filter((c) => c.status !== "Closed" && c.status !== "Verified")
+          .length,
+        capas.length || 1,
       ),
       severityScore: pct(overdueCapas.length, capas.length || 1),
       openCount: overdueCapas.length,
       totalCount: capas.length,
       topFixes: overdueCapas
         .slice(0, 3)
-        .map((c) => `${c.code || ""} ${c.title} — overdue since ${c.dueDate ? new Date(c.dueDate).toLocaleDateString() : "n/a"}; ${c.correctiveAction || ""}`),
+        .map(
+          (c) =>
+            `${c.code || ""} ${c.title} — overdue since ${c.dueDate ? new Date(c.dueDate).toLocaleDateString() : "n/a"}; ${c.correctiveAction || ""}`,
+        ),
     },
     {
       key: "assets",
@@ -209,13 +258,16 @@ export function computeInsights(data: SummaryData): Insights {
       exposurePct: pct(nonCompliantAssets.length, assets.length || 1),
       severityScore: pct(
         assets.filter((a) => a.assessmentStatus === "Non-Compliant").length,
-        assets.length || 1
+        assets.length || 1,
       ),
       openCount: nonCompliantAssets.length,
       totalCount: assets.length,
       topFixes: nonCompliantAssets
         .slice(0, 3)
-        .map((a) => `${a.assetTag || ""} ${a.assetName} — re-assess and remediate condition/controls`),
+        .map(
+          (a) =>
+            `${a.assetTag || ""} ${a.assetName} — re-assess and remediate condition/controls`,
+        ),
     },
     {
       key: "vendors",
@@ -223,13 +275,16 @@ export function computeInsights(data: SummaryData): Insights {
       exposurePct: pct(highRiskVendors.length, vendors.length || 1),
       severityScore: pct(
         vendors.filter((v) => v.residualRisk === "Critical").length,
-        vendors.length || 1
+        vendors.length || 1,
       ),
       openCount: highRiskVendors.length,
       totalCount: vendors.length,
       topFixes: highRiskVendors
         .slice(0, 3)
-        .map((v) => `${v.code || ""} ${v.vendorName} — strengthen controls (currently ${v.controlEffectiveness}) or re-negotiate data access`),
+        .map(
+          (v) =>
+            `${v.code || ""} ${v.vendorName} — strengthen controls (currently ${v.controlEffectiveness}) or re-negotiate data access`,
+        ),
     },
   ];
 
@@ -240,35 +295,52 @@ export function computeInsights(data: SummaryData): Insights {
   // the worst-severity bucket is read as "Escalating" even if its overall
   // exposure % looks moderate today; one whose backlog is mostly low-severity
   // noise is read as "Improving". This is a stated model, not a guarantee.
-  function trajectoryOf(a: Omit<VulnerabilityArea, "trajectory" | "predictedScore">): Trajectory {
+  function trajectoryOf(
+    a: Omit<VulnerabilityArea, "trajectory" | "predictedScore">,
+  ): Trajectory {
     const skew = a.severityScore - a.exposurePct;
     if (skew >= 15) return "Escalating";
     if (skew <= -15) return "Improving";
     return "Stable";
   }
-  function predictedScoreOf(a: Omit<VulnerabilityArea, "trajectory" | "predictedScore">): number {
+  function predictedScoreOf(
+    a: Omit<VulnerabilityArea, "trajectory" | "predictedScore">,
+  ): number {
     // weights severity skew most heavily, then raw exposure, then sheer
     // backlog size — the combination used to rank "where's the next
     // exposure likeliest to surface" across areas.
     const skew = a.severityScore - a.exposurePct;
     const backlogFactor = Math.min(20, a.openCount * 2);
-    const score = a.exposurePct * 0.4 + a.severityScore * 0.45 + Math.max(0, skew) * 0.15 + backlogFactor * 0.1;
+    const score =
+      a.exposurePct * 0.4 +
+      a.severityScore * 0.45 +
+      Math.max(0, skew) * 0.15 +
+      backlogFactor * 0.1;
     return Math.round(Math.min(100, score));
   }
 
-  const vulnerabilityAreas: VulnerabilityArea[] = rawVulnerabilityAreas.map((a) => ({
-    ...a,
-    trajectory: trajectoryOf(a),
-    predictedScore: predictedScoreOf(a),
-  }));
+  const vulnerabilityAreas: VulnerabilityArea[] = rawVulnerabilityAreas.map(
+    (a) => ({
+      ...a,
+      trajectory: trajectoryOf(a),
+      predictedScore: predictedScoreOf(a),
+    }),
+  );
 
-  const predictedRisks = [...vulnerabilityAreas].sort((a, b) => b.predictedScore - a.predictedScore);
+  const predictedRisks = [...vulnerabilityAreas].sort(
+    (a, b) => b.predictedScore - a.predictedScore,
+  );
 
   const overallExposure = Math.round(
-    vulnerabilityAreas.reduce((s, a) => s + a.exposurePct, 0) / vulnerabilityAreas.length
+    vulnerabilityAreas.reduce((s, a) => s + a.exposurePct, 0) /
+      vulnerabilityAreas.length,
   );
   const overallLabel =
-    overallExposure >= 60 ? "High Exposure" : overallExposure >= 35 ? "Moderate Exposure" : "Low Exposure";
+    overallExposure >= 60
+      ? "High Exposure"
+      : overallExposure >= 35
+        ? "Moderate Exposure"
+        : "Low Exposure";
 
   return {
     overallExposure,

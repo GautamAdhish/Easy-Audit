@@ -22,7 +22,8 @@ import { useAuth } from "./context/AuthContext";
 
 function UsersRoute() {
   const { user } = useAuth();
-  const canManageUsers = user?.role === "Admin" || user?.role === "Lead Auditor";
+  const canManageUsers =
+    user?.role === "Admin" || user?.role === "Lead Auditor";
 
   return canManageUsers ? <UsersPage /> : <Navigate to="/dashboard" replace />;
 }

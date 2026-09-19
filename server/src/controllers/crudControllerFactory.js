@@ -1,7 +1,7 @@
-import asyncHandler from '../utils/asyncHandler.js';
-import AppError from '../utils/AppError.js';
-import APIFeatures from '../utils/apiFeatures.js';
-import generateCode from '../utils/generateCode.js';
+import asyncHandler from "../utils/asyncHandler.js";
+import AppError from "../utils/AppError.js";
+import APIFeatures from "../utils/apiFeatures.js";
+import generateCode from "../utils/generateCode.js";
 
 /**
  * Factory that produces the standard getAll/getOne/create/update/remove
@@ -22,7 +22,9 @@ const createCRUDController = (Model, options = {}) => {
 
   const applyPopulate = (query) => {
     if (!populate) return query;
-    return Array.isArray(populate) ? populate.reduce((q, p) => q.populate(p), query) : query.populate(populate);
+    return Array.isArray(populate)
+      ? populate.reduce((q, p) => q.populate(p), query)
+      : query.populate(populate);
   };
 
   const getAll = asyncHandler(async (req, res) => {
@@ -51,7 +53,13 @@ const createCRUDController = (Model, options = {}) => {
   const getOne = asyncHandler(async (req, res, next) => {
     const query = applyPopulate(Model.findById(req.params.id));
     const doc = await query;
-    if (!doc) return next(new AppError(`${Model.modelName} not found with id ${req.params.id}`, 404));
+    if (!doc)
+      return next(
+        new AppError(
+          `${Model.modelName} not found with id ${req.params.id}`,
+          404,
+        ),
+      );
     res.status(200).json({ success: true, data: doc });
   });
 
@@ -69,13 +77,25 @@ const createCRUDController = (Model, options = {}) => {
       new: true,
       runValidators: true,
     });
-    if (!doc) return next(new AppError(`${Model.modelName} not found with id ${req.params.id}`, 404));
+    if (!doc)
+      return next(
+        new AppError(
+          `${Model.modelName} not found with id ${req.params.id}`,
+          404,
+        ),
+      );
     res.status(200).json({ success: true, data: doc });
   });
 
   const deleteOne = asyncHandler(async (req, res, next) => {
     const doc = await Model.findByIdAndDelete(req.params.id);
-    if (!doc) return next(new AppError(`${Model.modelName} not found with id ${req.params.id}`, 404));
+    if (!doc)
+      return next(
+        new AppError(
+          `${Model.modelName} not found with id ${req.params.id}`,
+          404,
+        ),
+      );
     res.status(204).json({ success: true, data: null });
   });
 

@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 /**
  * The frontend mock data uses short, human-readable IDs (A-001, F-002,
@@ -16,7 +16,8 @@ const counterSchema = new mongoose.Schema({
   seq: { type: Number, default: 0 },
 });
 
-const Counter = mongoose.models.Counter || mongoose.model('Counter', counterSchema);
+const Counter =
+  mongoose.models.Counter || mongoose.model("Counter", counterSchema);
 
 /**
  * @param {string} prefix e.g. 'A', 'F', 'C', 'R', 'E', 'CL', 'RP', 'U'
@@ -27,9 +28,9 @@ export const generateCode = async (prefix, pad = 3) => {
   const counter = await Counter.findByIdAndUpdate(
     prefix,
     { $inc: { seq: 1 } },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
-  return `${prefix}-${String(counter.seq).padStart(pad, '0')}`;
+  return `${prefix}-${String(counter.seq).padStart(pad, "0")}`;
 };
 
 export default generateCode;

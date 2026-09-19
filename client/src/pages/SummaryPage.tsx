@@ -124,7 +124,9 @@ export default function SummaryPage() {
             label: (
               <>
                 General Report{" "}
-                <span className="text-[10px] font-normal opacity-75">(Board)</span>
+                <span className="text-[10px] font-normal opacity-75">
+                  (Board)
+                </span>
               </>
             ),
           },
@@ -134,7 +136,9 @@ export default function SummaryPage() {
             label: (
               <>
                 Technical Report{" "}
-                <span className="text-[10px] font-normal opacity-75">(Auditors)</span>
+                <span className="text-[10px] font-normal opacity-75">
+                  (Auditors)
+                </span>
               </>
             ),
           },

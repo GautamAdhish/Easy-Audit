@@ -1,16 +1,16 @@
-import path from 'node:path';
-import fs from 'node:fs';
-import Report from '../models/Report.js';
-import createCRUDController from './crudControllerFactory.js';
-import asyncHandler from '../utils/asyncHandler.js';
-import AppError from '../utils/AppError.js';
-import generateCode from '../utils/generateCode.js';
-import { humanFileSize } from '../middleware/upload.js';
+import path from "node:path";
+import fs from "node:fs";
+import Report from "../models/Report.js";
+import createCRUDController from "./crudControllerFactory.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import AppError from "../utils/AppError.js";
+import generateCode from "../utils/generateCode.js";
+import { humanFileSize } from "../middleware/upload.js";
 
 const base = createCRUDController(Report, {
-  codePrefix: 'RP',
-  searchFields: ['title', 'period'],
-  populate: [{ path: 'generatedBy', select: 'name email role' }],
+  codePrefix: "RP",
+  searchFields: ["title", "period"],
+  populate: [{ path: "generatedBy", select: "name email role" }],
 });
 
 const createOne = asyncHandler(async (req, res, next) => {
@@ -18,10 +18,12 @@ const createOne = asyncHandler(async (req, res, next) => {
   const generator = req.body.generatedBy || req.user?._id;
 
   if (!title || !type || !period || !generator) {
-    return next(new AppError('title, type, period and generatedBy are required.', 400));
+    return next(
+      new AppError("title, type, period and generatedBy are required.", 400),
+    );
   }
 
-  const code = await generateCode('RP');
+  const code = await generateCode("RP");
   const doc = await Report.create({
     code,
     title,
@@ -55,15 +57,19 @@ const updateOne = asyncHandler(async (req, res, next) => {
     runValidators: true,
   });
 
-  if (!doc) return next(new AppError(`Report not found with id ${req.params.id}`, 404));
+  if (!doc)
+    return next(new AppError(`Report not found with id ${req.params.id}`, 404));
   res.status(200).json({ success: true, data: doc });
 });
 
 const downloadFile = asyncHandler(async (req, res, next) => {
-  const doc = await Report.findById(req.params.id).select('+filePath fileName');
-  if (!doc) return next(new AppError(`Report not found with id ${req.params.id}`, 404));
+  const doc = await Report.findById(req.params.id).select("+filePath fileName");
+  if (!doc)
+    return next(new AppError(`Report not found with id ${req.params.id}`, 404));
   if (!doc.filePath || !fs.existsSync(doc.filePath)) {
-    return next(new AppError('No file is attached to this report record.', 404));
+    return next(
+      new AppError("No file is attached to this report record.", 404),
+    );
   }
 
   res.download(doc.filePath, doc.fileName || path.basename(doc.filePath));

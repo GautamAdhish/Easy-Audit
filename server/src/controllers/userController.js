@@ -1,12 +1,16 @@
-import User from '../models/User.js';
-import asyncHandler from '../utils/asyncHandler.js';
-import AppError from '../utils/AppError.js';
-import APIFeatures from '../utils/apiFeatures.js';
-import generateCode from '../utils/generateCode.js';
+import User from "../models/User.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import AppError from "../utils/AppError.js";
+import APIFeatures from "../utils/apiFeatures.js";
+import generateCode from "../utils/generateCode.js";
 
 // GET /api/users
 export const getAll = asyncHandler(async (req, res) => {
-  const featureQuery = new APIFeatures(User.find(), req.query, ['name', 'email', 'department'])
+  const featureQuery = new APIFeatures(User.find(), req.query, [
+    "name",
+    "email",
+    "department",
+  ])
     .filter()
     .search()
     .sort()
@@ -14,7 +18,7 @@ export const getAll = asyncHandler(async (req, res) => {
     .paginate();
 
   const [results, total] = await Promise.all([
-    featureQuery.query.populate('auditsAssigned'),
+    featureQuery.query.populate("auditsAssigned"),
     User.countDocuments(featureQuery.query.getFilter()),
   ]);
 
@@ -30,14 +34,15 @@ export const getAll = asyncHandler(async (req, res) => {
 
 // GET /api/users/:id
 export const getOne = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.params.id).populate('auditsAssigned');
-  if (!user) return next(new AppError(`User not found with id ${req.params.id}`, 404));
+  const user = await User.findById(req.params.id).populate("auditsAssigned");
+  if (!user)
+    return next(new AppError(`User not found with id ${req.params.id}`, 404));
   res.status(200).json({ success: true, data: user });
 });
 
 // POST /api/users  (Admin only — see routes)
 export const createOne = asyncHandler(async (req, res) => {
-  const code = await generateCode('U');
+  const code = await generateCode("U");
   const user = await User.create({ ...req.body, code });
   res.status(201).json({ success: true, data: user });
 });
@@ -52,13 +57,15 @@ export const updateOne = asyncHandler(async (req, res, next) => {
     new: true,
     runValidators: true,
   });
-  if (!user) return next(new AppError(`User not found with id ${req.params.id}`, 404));
+  if (!user)
+    return next(new AppError(`User not found with id ${req.params.id}`, 404));
   res.status(200).json({ success: true, data: user });
 });
 
 // DELETE /api/users/:id  (Admin only — see routes)
 export const deleteOne = asyncHandler(async (req, res, next) => {
   const user = await User.findByIdAndDelete(req.params.id);
-  if (!user) return next(new AppError(`User not found with id ${req.params.id}`, 404));
+  if (!user)
+    return next(new AppError(`User not found with id ${req.params.id}`, 404));
   res.status(204).json({ success: true, data: null });
 });
