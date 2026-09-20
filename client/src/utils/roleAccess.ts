@@ -33,7 +33,7 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
       },
       {
         label: "Reports",
-        path: "/reports",
+        path: "/summary",
         description: "Open all report views",
       },
     ],
@@ -45,9 +45,7 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
       "/findings",
       "/capa",
       "/risks",
-      "/evidence",
       "/assets",
-      "/reports",
       "/summary",
       "/users",
       "/settings",
@@ -71,7 +69,7 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
       },
       {
         label: "Reports",
-        path: "/reports",
+        path: "/summary",
         description: "Review audit reports",
       },
     ],
@@ -83,9 +81,7 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
       "/findings",
       "/capa",
       "/risks",
-      "/evidence",
       "/assets",
-      "/reports",
       "/summary",
       "/users",
     ],
@@ -97,7 +93,7 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
     menuActions: [
       {
         label: "Reports",
-        path: "/reports",
+        path: "/summary",
         description: "Generate and review audit reports",
       },
       {
@@ -119,9 +115,7 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
       "/findings",
       "/capa",
       "/risks",
-      "/evidence",
       "/assets",
-      "/reports",
       "/summary",
     ],
   },
@@ -132,11 +126,11 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
     menuActions: [
       {
         label: "View Reports",
-        path: "/reports",
+        path: "/summary",
         description: "Open shared report views only",
       },
     ],
-    navPaths: ["/dashboard", "/reports"],
+    navPaths: ["/dashboard", "/summary"],
   },
 };
 

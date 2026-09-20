@@ -229,9 +229,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
       "/checklist",
       "/capa",
       "/risks",
-      "/evidence",
       "/assets",
-      "/reports",
       "/users",
       "/vendor-management",
     ];

@@ -12,14 +12,12 @@ import {
   AlertTriangle,
   Target,
   ShieldAlert,
-  FolderOpen,
-  BarChart2,
-  FileBarChart,
   Building2,
   Users,
   Settings,
   User,
   Image,
+  FileBarChart,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -34,10 +32,8 @@ const navItems = [
   { label: "Findings", path: "/findings", icon: AlertTriangle },
   { label: "CAPA", path: "/capa", icon: Target },
   { label: "Risks", path: "/risks", icon: ShieldAlert },
-  { label: "Documents", path: "/evidence", icon: FolderOpen },
   { label: "Assets", path: "/assets", icon: Image },
   { label: "Vendor Management", path: "/vendor-management", icon: Building2 },
-  { label: "Reports", path: "/reports", icon: BarChart2 },
   { label: "Summary Report", path: "/summary", icon: FileBarChart },
   { label: "Users", path: "/users", icon: Users },
   { label: "Settings", path: "/settings", icon: Settings },
@@ -153,9 +149,11 @@ const Sidebar: React.FC = () => {
           )}
         >
           {navItems
-            .filter((item) => getRoleDefinition(user?.role).navPaths.includes(item.path))
+            .filter((item) =>
+              getRoleDefinition(user?.role).navPaths.includes(item.path),
+            )
             .map((item) => (
-            <NavItem key={item.path} {...item} collapsed={collapsed} />
+              <NavItem key={item.path} {...item} collapsed={collapsed} />
             ))}
         </nav>
 

@@ -7,9 +7,7 @@ import ChecklistPage from "./pages/ChecklistPage";
 import FindingsPage from "./pages/FindingsPage";
 import CapaPage from "./pages/CapaPage";
 import RisksPage from "./pages/RisksPage";
-import EvidencePage from "./pages/EvidencePage";
 import AssetsPage from "./pages/AssetsPage";
-import ReportsPage from "./pages/ReportsPage";
 import SummaryPage from "./pages/SummaryPage";
 import VendorManagementAssessmentPage from "./pages/VendorManagementAssessmentPage";
 import UsersPage from "./pages/UsersPage";
@@ -44,13 +42,11 @@ export default function App() {
               <Route path="/findings" element={<FindingsPage />} />
               <Route path="/capa" element={<CapaPage />} />
               <Route path="/risks" element={<RisksPage />} />
-              <Route path="/evidence" element={<EvidencePage />} />
               <Route path="/assets" element={<AssetsPage />} />
               <Route
                 path="/vendor-management"
                 element={<VendorManagementAssessmentPage />}
               />
-              <Route path="/reports" element={<ReportsPage />} />
               <Route path="/summary" element={<SummaryPage />} />
               <Route path="/users" element={<UsersRoute />} />
               <Route path="/settings" element={<SettingsPage />} />
