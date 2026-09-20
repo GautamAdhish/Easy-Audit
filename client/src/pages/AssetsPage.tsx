@@ -4,13 +4,11 @@ import {
   Archive,
   Box,
   Building2,
-  Calendar,
   CheckCircle2,
   ClipboardList,
   Cpu,
   Download,
   Eye,
-  MapPin,
   Package,
   Pencil,
   Plus,
@@ -18,7 +16,6 @@ import {
   ShieldCheck,
   Trash2,
   Truck,
-  UserCheck,
   Wrench,
   XCircle,
   type LucideIcon,
@@ -63,25 +60,18 @@ const CATEGORY_ICON: Record<string, LucideIcon> = {
   Other: Package,
 };
 
-const STATUS_META: Record<
-  string,
-  {
-    tone: "green" | "amber" | "red" | "neutral";
-    badge: "green" | "amber" | "red" | "gray";
-    icon: LucideIcon;
-  }
-> = {
-  Pass: { tone: "green", badge: "green", icon: CheckCircle2 },
-  "Needs Review": { tone: "amber", badge: "amber", icon: AlertTriangle },
-  "Non-Compliant": { tone: "red", badge: "red", icon: XCircle },
-  Retired: { tone: "neutral", badge: "gray", icon: Archive },
+const STATUS_BADGE: Record<string, "green" | "amber" | "red" | "gray"> = {
+  Pass: "green",
+  "Needs Review": "amber",
+  "Non-Compliant": "red",
+  Retired: "gray",
 };
 
-const CONDITION_BADGE: Record<string, "green" | "blue" | "amber" | "red"> = {
-  Excellent: "green",
-  Good: "blue",
-  Fair: "amber",
-  Poor: "red",
+const CONDITION_TEXT: Record<string, string> = {
+  Excellent: "text-green-700",
+  Good: "text-ink-700",
+  Fair: "text-amber-700",
+  Poor: "text-red-700",
 };
 
 const asset = resourceApi("assets");
@@ -285,6 +275,12 @@ export default function AssetsPage() {
     }
   };
 
+  const hasActiveFilters =
+    filters.category !== "All" ||
+    filters.department !== "All" ||
+    filters.condition !== "All" ||
+    filters.assessmentStatus !== "All";
+
   return (
     <div>
       <PageHeader
@@ -306,7 +302,7 @@ export default function AssetsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
         <StatTile
           variant="card"
           icon={ClipboardList}
@@ -344,7 +340,7 @@ export default function AssetsPage() {
         />
       </div>
 
-      <div className="flex flex-col md:flex-row md:flex-wrap gap-3 mb-5">
+      <div className="flex flex-col md:flex-row md:items-center md:flex-wrap gap-3 mb-6">
         <div className="flex-1 min-w-[220px] max-w-sm">
           <Input
             icon={<Search className="w-4 h-4" />}
@@ -418,19 +414,15 @@ export default function AssetsPage() {
           ))}
         </Select>
 
-        {filters !== emptyFilters &&
-          (filters.category !== "All" ||
-            filters.department !== "All" ||
-            filters.condition !== "All" ||
-            filters.assessmentStatus !== "All") && (
-            <Button
-              variant="ghost"
-              size="md"
-              onClick={() => setFilters(emptyFilters)}
-            >
-              Clear filters
-            </Button>
-          )}
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={() => setFilters(emptyFilters)}
+            className="text-xs text-slate-500 hover:text-ink-800 underline underline-offset-2"
+          >
+            Clear filters
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -448,186 +440,135 @@ export default function AssetsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map((row) => {
             const CategoryIcon = CATEGORY_ICON[row.category] || Package;
-            const statusMeta =
-              STATUS_META[row.assessmentStatus] || STATUS_META.Retired;
-            const StatusIcon = statusMeta.icon;
 
             return (
               <div
                 key={row._id}
-                className="bg-white rounded-2xl shadow-[0_1px_3px_rgba(16,26,46,0.06)] ring-1 ring-ink-900/5 flex flex-col overflow-hidden"
+                className="bg-white rounded-2xl shadow-[0_1px_3px_rgba(16,26,46,0.06)] ring-1 ring-ink-900/[0.06] flex flex-col"
               >
-                <div className="flex items-start justify-between gap-3 p-4 pb-3">
+                <div className="flex items-start justify-between gap-3 p-5 pb-4">
                   <div className="flex items-start gap-3 min-w-0">
-                    <div
-                      className={`w-11 h-11 rounded-xl grid place-items-center shrink-0 ${
-                        statusMeta.tone === "green"
-                          ? "bg-green-50 text-green-600"
-                          : statusMeta.tone === "amber"
-                            ? "bg-amber-50 text-amber-600"
-                            : statusMeta.tone === "red"
-                              ? "bg-red-50 text-red-600"
-                              : "bg-slate-100 text-slate-500"
-                      }`}
-                    >
-                      <CategoryIcon className="w-5 h-5" />
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 grid place-items-center shrink-0">
+                      <CategoryIcon className="w-4.5 h-4.5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-mono uppercase tracking-wide text-slate-400">
-                        {row.code || "—"} · {row.assetTag}
-                      </p>
                       <p
                         className="text-sm font-semibold text-ink-900 truncate"
                         title={row.assetName}
                       >
                         {row.assetName}
                       </p>
-                      <p className="text-xs text-slate-500">{row.category}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {row.category} · {row.assetTag}
+                      </p>
                     </div>
                   </div>
                   <Badge
                     label={row.assessmentStatus}
-                    variant={statusMeta.badge}
+                    variant={STATUS_BADGE[row.assessmentStatus] || "gray"}
                   />
                 </div>
 
-                <div className="px-4 grid grid-cols-2 gap-x-3 gap-y-2.5 text-xs pb-3">
-                  <div className="flex items-start gap-1.5 min-w-0">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wide">
-                        Location
-                      </p>
-                      <p className="text-ink-800 truncate" title={row.location}>
-                        {row.location || "—"}
-                      </p>
-                    </div>
+                <div className="px-5 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-slate-400 mb-0.5">
+                      Location
+                    </p>
+                    <p className="text-ink-800 truncate" title={row.location}>
+                      {row.location || "—"}
+                    </p>
                   </div>
-                  <div className="flex items-start gap-1.5 min-w-0">
-                    <Building2 className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wide">
-                        Department
-                      </p>
-                      <p
-                        className="text-ink-800 truncate"
-                        title={row.department}
-                      >
-                        {row.department || "—"}
-                      </p>
-                    </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-slate-400 mb-0.5">
+                      Department
+                    </p>
+                    <p className="text-ink-800 truncate" title={row.department}>
+                      {row.department || "—"}
+                    </p>
                   </div>
-                  <div className="flex items-start gap-1.5 min-w-0">
-                    <UserCheck className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wide">
-                        Assessed By
-                      </p>
-                      <p
-                        className="text-ink-800 truncate"
-                        title={row.assessedBy?.name}
-                      >
-                        {row.assessedBy?.name || "—"}
-                      </p>
-                    </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-slate-400 mb-0.5">
+                      Condition
+                    </p>
+                    <p
+                      className={`font-medium ${CONDITION_TEXT[row.condition] || "text-ink-800"}`}
+                    >
+                      {row.condition || "—"}
+                    </p>
                   </div>
-                  <div className="flex items-start gap-1.5 min-w-0">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wide">
-                        Assessed On
-                      </p>
-                      <p className="text-ink-800 truncate">
-                        {fmtDate(row.assessmentDate)}
-                      </p>
-                    </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-slate-400 mb-0.5">
+                      Assessed
+                    </p>
+                    <p className="text-ink-800 truncate">
+                      {fmtDate(row.assessmentDate)}
+                    </p>
                   </div>
                 </div>
 
-                <div className="px-4 pb-3 flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wide">
-                    Condition
-                  </span>
-                  <Badge
-                    label={row.condition}
-                    variant={CONDITION_BADGE[row.condition] || "gray"}
-                  />
+                <div className="px-5 pt-3 mt-1 text-sm text-ink-800">
+                  <p className="text-[11px] text-slate-400 mb-0.5">
+                    Assessed by
+                  </p>
+                  <p className="truncate" title={row.assessedBy?.name}>
+                    {row.assessedBy?.name || "—"}
+                  </p>
                 </div>
 
                 {row.notes && (
-                  <div className="px-4 pb-3">
-                    <p
-                      className="text-xs text-slate-500 line-clamp-2 italic"
-                      title={row.notes}
-                    >
-                      "{row.notes}"
-                    </p>
-                  </div>
+                  <p
+                    className="px-5 pt-3 text-xs text-slate-500 line-clamp-2"
+                    title={row.notes}
+                  >
+                    {row.notes}
+                  </p>
                 )}
 
-                <div className="mt-auto flex items-center justify-between gap-2 px-4 py-2.5 border-t border-ink-900/8 bg-slate-50/60">
-                  <div className="flex items-center gap-0.5">
-                    <StatusIcon
-                      className={`w-3.5 h-3.5 ${
-                        statusMeta.tone === "green"
-                          ? "text-green-600"
-                          : statusMeta.tone === "amber"
-                            ? "text-amber-600"
-                            : statusMeta.tone === "red"
-                              ? "text-red-600"
-                              : "text-slate-400"
-                      }`}
-                    />
-                    <span className="text-[11px] text-slate-500">
-                      Assessment on file
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-0.5">
-                    {row.photoName && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => void openPreview(row)}
-                          className="p-1.5 text-slate-400 hover:text-ink-700 rounded-md"
-                          title="Preview photo"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            api.download(
-                              `/assets/${row._id}/photo`,
-                              row.photoName,
-                            )
-                          }
-                          className="p-1.5 text-slate-400 hover:text-ink-700 rounded-md"
-                          title="Download photo"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                      </>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setEditing({ ...row, mode: "edit" })}
-                      className="p-1.5 text-slate-400 hover:text-ink-700 rounded-md"
-                      title="Edit"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDeleteTarget(row)}
-                      className="p-1.5 text-slate-400 hover:text-red-600 rounded-md"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                <div className="mt-4 flex items-center justify-end gap-0.5 px-3 py-2 border-t border-ink-900/[0.06]">
+                  {row.photoName && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => void openPreview(row)}
+                        className="p-1.5 text-slate-400 hover:text-ink-700 rounded-md"
+                        title="Preview photo"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          api.download(
+                            `/assets/${row._id}/photo`,
+                            row.photoName,
+                          )
+                        }
+                        className="p-1.5 text-slate-400 hover:text-ink-700 rounded-md"
+                        title="Download photo"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setEditing({ ...row, mode: "edit" })}
+                    className="p-1.5 text-slate-400 hover:text-ink-700 rounded-md"
+                    title="Edit"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteTarget(row)}
+                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-md"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             );
