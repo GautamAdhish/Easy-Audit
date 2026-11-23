@@ -26,7 +26,7 @@ WORKDIR /app
 COPY --from=server-deps /app/server/node_modules ./server/node_modules
 COPY server/ ./server/
 # app.js resolves the client build relative to server/src as ../../client/dist
-COPY --from=client-build /app/dist ./client/dist
+COPY --from=client-build /app/client/dist ./client/dist
 
 ENV NODE_ENV=production
 ENV PORT=5000
