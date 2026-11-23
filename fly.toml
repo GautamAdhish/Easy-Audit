@@ -1,14 +1,14 @@
-# fly.toml app configuration file generated for easy-audit on 2026-11-23T07:53:12Z
+# fly.toml app configuration file generated for easy-audit on 2026-11-23T08:04:11Z
 #
 # See https://docs.fly.io/reference/configuration for information about how to use this file.
 #
 
 app = 'easy-audit'
-primary_region = 'ams'
+primary_region = 'sin'
 
 [build]
 [http_service]
-  internal_port = 8080
+  internal_port = 5000
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
